@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trivia Crack: San Luis Edition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+  <!-- Enlace al archivo CSS separado -->
+  <link rel="stylesheet" href="questions.css" />
+</head>
+<body>
+
+  <canvas id="confetti-canvas"></canvas>
+
+  <div class="app-container">
+    <!-- Top Header -->
+    <header class="top-bar">
+      <div class="brand">
+        <div class="brand-logo" title="San Luis Trivia">👑</div>
+        <div class="brand-text">
+          <h1>Trivia Crack</h1>
+          <span>San Luis Edition</span>
+        </div>
+      </div>
+
+      <div class="stats-group">
+        <div class="stat-pill" title="Remaining Lives">
+          <div class="hearts" id="hearts-display">
+            <span class="heart">❤️</span>
+            <span class="heart">❤️</span>
+            <span class="heart">❤️</span>
+          </div>
+        </div>
+        <div class="stat-pill" title="Current Streak">
+          🔥 <span id="streak-count">0</span>
+        </div>
+        <div class="stat-pill" title="Total Score">
+          ⭐ <span id="score-count">0</span>
+        </div>
+        <button class="sound-btn" id="sound-toggle" title="Toggle Sound">🔊</button>
+      </div>
+    </header>
+
+    <!-- Crown Collection Progress Bar -->
+    <section class="crowns-bar" aria-label="Collected Crowns">
+      <div class="crowns-label">Conquer the 5 Categories to Win</div>
+      <div class="crowns-grid" id="crowns-grid">
+        <!-- Populated dynamically -->
+      </div>
+    </section>
+
+    <!-- Main Wheel Arena -->
+    <main class="wheel-stage">
+      <div class="status-banner" id="status-banner">
+        Tap <strong>SPIN</strong> to spin the wheel!
+      </div>
+
+      <div class="wheel-wrapper">
+        <div class="wheel-pointer" id="wheel-pointer"></div>
+        <div class="wheel-outer-rim" id="wheel-rim">
+          <canvas id="wheel-canvas" width="680" height="680"></canvas>
+          <button class="spin-center-btn" id="spin-btn">SPIN</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Question Modal -->
+  <div class="modal-backdrop" id="question-modal">
+    <div class="modal-card">
+      <div class="modal-header" id="q-header">
+        <div class="cat-badge" id="q-cat-badge">
+          <span id="q-cat-icon">🏜️</span>
+          <span id="q-cat-name">Category</span>
+        </div>
+        <div class="crown-alert" id="q-crown-alert">👑 CROWN QUESTION!</div>
+      </div>
+      <div class="modal-body">
+        <p class="question-text" id="q-text">Loading question...</p>
+        <div class="options-list" id="q-options">
+          <!-- Buttons injected dynamically -->
+        </div>
+        <div class="feedback-box" id="q-feedback"></div>
+        <button class="continue-btn" id="q-continue-btn">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Game Modal -->
+  <div class="modal-backdrop" id="end-modal">
+    <div class="modal-card end-card">
+      <div class="end-emoji" id="end-emoji">🏆</div>
+      <h2 class="end-title" id="end-title">You Are the King of San Luis!</h2>
+      <p class="end-subtitle" id="end-subtitle">You conquered all 5 categories about San Luis's wonders and climate.</p>
+      
+      <div class="end-stats">
+        <div class="end-stat-box">
+          <span class="val" id="end-score">0</span>
+          <span class="lbl">Points</span>
+        </div>
+        <div class="end-stat-box">
+          <span class="val" id="end-crowns">5/5</span>
+          <span class="lbl">Crowns</span>
+        </div>
+        <div class="end-stat-box">
+          <span class="val" id="end-accuracy">100%</span>
+          <span class="lbl">Accuracy</span>
+        </div>
+      </div>
+
+      <button class="restart-btn" id="restart-btn">🔄 Play Again</button>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // 1. CATEGORIES & QUESTION BANK (ENGLISH)
+    // ==========================================
+    const CATEGORIES = [
+      {
+        id: 'quijadas',
+        name: 'Sierra de las Quijadas',
+        shortName: 'Quijadas',
+        icon: '🏜️',
+        color: '#f97316',
+        darkColor: '#c2410c',
+        questions: [
+          {
+            q: "In which part of San Luis province is Sierra de las Quijadas National Park located?",
+            options: ["Northwest of the province", "Southeast of the province", "In the center of the capital city", "On the southern border"],
+            answer: 0,
+            info: "Sierra de las Quijadas National Park is located in the northwest of San Luis province."
+          },
+          {
+            q: "Approximately how many hectares does Sierra de las Quijadas National Park protect?",
+            options: ["Nearly 74,000 hectares", "Around 12,000 hectares", "Over 250,000 hectares", "Exactly 5,000 hectares"],
+            answer: 0,
+            info: "It protects nearly 74,000 hectares of desert landscapes and reddish geological formations."
+          },
+          {
+            q: "What is the name of the massive natural amphitheater with deep canyons and cliffs in Sierra de las Quijadas?",
+            options: ["Potrero de la Aguada", "Valle del Conlara", "Filo Serrano", "Potrero de los Funes"],
+            answer: 0,
+            info: "Potrero de la Aguada is a massive natural amphitheater carved by erosion over millions of years."
+          },
+          {
+            q: "What paleontological discovery gives Sierra de las Quijadas immense scientific value?",
+            options: ["Dinosaur footprints", "Frozen wooly mammoths", "Ancient underwater coral cities", "Viking ship remains"],
+            answer: 0,
+            info: "Dinosaur footprints have been discovered in the park, adding to its paleontological value."
+          },
+          {
+            q: "Which iconic bird species uses Sierra de las Quijadas as its habitat?",
+            options: ["Andean condor", "Emperor penguin", "Atlantic puffin", "Toucan"],
+            answer: 0,
+            info: "The park serves as a vital habitat for species such as the Andean condor."
+          }
+        ]
+      },
+      {
+        id: 'carolina',
+        name: 'La Carolina',
+        shortName: 'La Carolina',
+        icon: '⛏️',
+        color: '#eab308',
+        darkColor: '#a16207',
+        questions: [
+          {
+            q: "At the foot of which hill is the historical village of La Carolina located?",
+            options: ["Tomolasta Hill", "Mirador del Sol", "Cerro Uritorco", "Aconcagua"],
+            answer: 0,
+            info: "La Carolina is located in the Sierras de San Luis, right at the foot of Tomolasta Hill."
+          },
+          {
+            q: "In which department of San Luis is La Carolina situated?",
+            options: ["Coronel Pringles Department", "Juan Martín de Pueyrredón Department", "Junín Department", "Chacabuco Department"],
+            answer: 0,
+            info: "La Carolina is located in the Sierras de San Luis within the Coronel Pringles Department."
+          },
+          {
+            q: "What kind of streets characterize the quaint village of La Carolina?",
+            options: ["Cobblestone streets", "Wooden boardwalks", "Six-lane asphalt avenues", "Water canals"],
+            answer: 0,
+            info: "La Carolina is known for its charming cobblestone streets."
+          },
+          {
+            q: "What historical aesthetic and past does La Carolina preserve?",
+            options: ["Colonial aesthetic and mining past", "Futuristic architecture and space history", "Industrial textile factories", "Maritime port heritage"],
+            answer: 0,
+            info: "La Carolina preserves its colonial aesthetic and rich mining past."
+          }
+        ]
+      },
+      {
+        id: 'merlo',
+        name: 'Villa de Merlo',
+        shortName: 'Merlo',
+        icon: '⛰️',
+        color: '#22c55e',
+        darkColor: '#15803d',
+        questions: [
+          {
+            q: "At the foot of which mountain range is Villa de Merlo located?",
+            options: ["Sierras de los Comechingones", "Sierras de las Quijadas", "Andes Centrales", "Sierras de Tandil"],
+            answer: 0,
+            info: "Villa de Merlo is located in the northwest of the province, at the foot of the Sierras de los Comechingones."
+          },
+          {
+            q: "Why is Villa de Merlo globally recognized?",
+            options: ["For its microclimate (pure air, optimal oxygen and ozone)", "For having the largest seaport in Argentina", "For its year-round polar icebergs", "For its active volcanic geysers"],
+            answer: 0,
+            info: "Merlo is globally famous for its microclimate, characterized by pure air and optimal levels of oxygen and ozone."
+          },
+          {
+            q: "How high above sea level is the Mirador del Sol in Villa de Merlo?",
+            options: ["Nearly 1,470 meters (4,820 feet)", "Around 300 meters (980 feet)", "Over 4,500 meters (14,760 feet)", "At sea level (0 meters)"],
+            answer: 0,
+            info: "Mirador del Sol sits at nearly 1,470 meters (4,820 feet) above sea level."
+          },
+          {
+            q: "Which valley can be seen with breathtaking panoramic views from Mirador del Sol and Filo Serrano road?",
+            options: ["Conlara Valley", "Uco Valley", "Calchaquí Valley", "Punilla Valley"],
+            answer: 0,
+            info: "Mirador del Sol and the Filo Serrano road offer panoramic views of the Conlara Valley."
+          },
+          {
+            q: "Which waterfall and indigenous culture are associated with Villa de Merlo?",
+            options: ["Pasos Malos waterfall & Comechingón culture", "Salto de la Moneda & Mapuche culture", "Iguazú Falls & Guaraní culture", "Salto del Agrio & Tehuelche culture"],
+            answer: 0,
+            info: "Merlo is famous for waterfalls like Pasos Malos and a rich history connected to the Comechingón indigenous culture."
+          }
+        ]
+      },
+      {
+        id: 'potrero',
+        name: 'Potrero de los Funes',
+        shortName: 'Potrero',
+        icon: '🏎️',
+        color: '#3b82f6',
+        darkColor: '#1d4ed8',
+        questions: [
+          {
+            q: "How far is Potrero de los Funes from the capital city of San Luis?",
+            options: ["About 20 km (12 miles)", "About 180 km (112 miles)", "About 500 km (310 miles)", "Less than 1 km"],
+            answer: 0,
+            info: "Potrero de los Funes is located in the Juan Martín de Pueyrredón Department, about 20 km (12 miles) from the capital city."
+          },
+          {
+            q: "What sits at the center of the picturesque valley of Potrero de los Funes?",
+            options: ["A large reservoir (Potrero de los Funes Dam)", "A salt flat", "An ancient Roman colosseum", "A dense tropical rainforest"],
+            answer: 0,
+            info: "The valley is surrounded by hills and mountain ranges centered around the Potrero de los Funes Dam."
+          },
+          {
+            q: "Which waterfall can hikers trek to in Potrero de los Funes?",
+            options: ["Salto de la Moneda waterfall", "Pasos Malos waterfall", "Niagara Falls", "Salto del Tabaquillo"],
+            answer: 0,
+            info: "Potrero de los Funes is a top choice for hiking, including the trek to the Salto de la Moneda waterfall."
+          },
+          {
+            q: "What unique sporting feature circles the entire lake in Potrero de los Funes?",
+            options: ["An international racing circuit", "An 18-hole floating golf course", "A high-speed bullet train track", "An Olympic bobsled track"],
+            answer: 0,
+            info: "Potrero de los Funes features a famous international racing circuit that circles the entire lake."
+          }
+        ]
+      },
+      {
+        id: 'clima',
+        name: 'Climate in San Luis',
+        shortName: 'Climate',
+        icon: '☀️',
+        color: '#a855f7',
+        darkColor: '#7e22ce',
+        questions: [
+          {
+            q: "How is the climate in San Luis described overall?",
+            options: ["Mostly dry climate with hot summers and cold winters", "Tropical rainforest climate year-round", "Subarctic tundra with permanent snow", "Constant monsoon weather"],
+            answer: 0,
+            info: "San Luis has a mostly dry climate with hot summers, cold winters, and plenty of sunny days."
+          },
+          {
+            q: "What temperatures can summers reach in San Luis?",
+            options: ["Above 30 degrees Celsius", "Below 5 degrees Celsius", "Never above 18 degrees Celsius", "Around -10 degrees Celsius"],
+            answer: 0,
+            info: "Summers in San Luis are hot, and temperatures can go above 30 degrees Celsius."
+          },
+          {
+            q: "During which seasons does it rain more in San Luis?",
+            options: ["Spring and summer (mostly with storms)", "Autumn and winter", "Only in July", "It never rains at all"],
+            answer: 0,
+            info: "It rains more in spring and summer, and most of the rain comes with storms."
+          },
+          {
+            q: "How does the weather change in the mountains of San Luis compared to the rest of the province?",
+            options: ["It is cooler and more humid", "It is much hotter and drier", "It has zero wind and high humidity", "Temperatures exceed 50°C"],
+            answer: 0,
+            info: "In the mountains of San Luis, the weather is cooler and more humid."
+          },
+          {
+            q: "Besides hot summers and cold winters (sometimes with frost), what characterizes San Luis's weather?",
+            options: ["A lot of sunny days and semi-arid to arid zones", "Continuous dense fog every day", "Daily hurricanes", "Permanent overcast skies"],
+            answer: 0,
+            info: "San Luis has semi-arid and arid areas, occasional winter frost, and a lot of sunny days."
+          }
+        ]
+      }
+    ];
+
+    // ==========================================
+    // 2. SYNTHESIZED SOUND EFFECTS (WEB AUDIO)
+    // ==========================================
+    class SoundFX {
+      constructor() {
+        this.enabled = true;
+        this.ctx = null;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) this.ctx = new AudioCtx();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playTick() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(520, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(180, this.ctx.currentTime + 0.045);
+        gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.045);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.05);
+      }
+
+      playCorrect() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          const start = this.ctx.currentTime + i * 0.07;
+          osc.frequency.setValueAtTime(freq, start);
+          gain.gain.setValueAtTime(0.2, start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.25);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(start);
+          osc.stop(start + 0.26);
+        });
+      }
+
+      playWrong() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const notes = [240, 185];
+        notes.forEach((freq, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          const start = this.ctx.currentTime + i * 0.14;
+          osc.frequency.setValueAtTime(freq, start);
+          gain.gain.setValueAtTime(0.16, start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.28);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(start);
+          osc.stop(start + 0.3);
+        });
+      }
+
+      playWin() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const melody = [523.25, 659.25, 783.99, 1046.50, 783.99, 1046.50];
+        const times = [0, 0.1, 0.2, 0.3, 0.45, 0.6];
+        melody.forEach((freq, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          const start = this.ctx.currentTime + times[i];
+          osc.frequency.setValueAtTime(freq, start);
+          gain.gain.setValueAtTime(0.24, start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.35);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(start);
+          osc.stop(start + 0.36);
+        });
+      }
+    }
+
+    const sfx = new SoundFX();
+
+    // ==========================================
+    // 3. GAME STATE & DOM REFERENCES
+    // ==========================================
+    const state = {
+      lives: 3,
+      score: 0,
+      streak: 0,
+      totalAnswered: 0,
+      totalCorrect: 0,
+      crowns: new Set(),
+      usedQuestions: {},
+      currentRotation: 0,
+      isSpinning: false,
+      activeCategory: null,
+      activeQuestion: null
+    };
+
+    const wheelCanvas = document.getElementById('wheel-canvas');
+    const ctx = wheelCanvas.getContext('2d');
+    const spinBtn = document.getElementById('spin-btn');
+    const wheelPointer = document.getElementById('wheel-pointer');
+    const wheelRim = document.getElementById('wheel-rim');
+    const statusBanner = document.getElementById('status-banner');
+    const crownsGrid = document.getElementById('crowns-grid');
+    const heartsDisplay = document.getElementById('hearts-display');
+    const streakCount = document.getElementById('streak-count');
+    const scoreCount = document.getElementById('score-count');
+    const soundToggle = document.getElementById('sound-toggle');
+
+    const qModal = document.getElementById('question-modal');
+    const qHeader = document.getElementById('q-header');
+    const qCatIcon = document.getElementById('q-cat-icon');
+    const qCatName = document.getElementById('q-cat-name');
+    const qCrownAlert = document.getElementById('q-crown-alert');
+    const qText = document.getElementById('q-text');
+    const qOptions = document.getElementById('q-options');
+    const qFeedback = document.getElementById('q-feedback');
+    const qContinueBtn = document.getElementById('q-continue-btn');
+
+    const endModal = document.getElementById('end-modal');
+    const endEmoji = document.getElementById('end-emoji');
+    const endTitle = document.getElementById('end-title');
+    const endSubtitle = document.getElementById('end-subtitle');
+    const endScore = document.getElementById('end-score');
+    const endCrowns = document.getElementById('end-crowns');
+    const endAccuracy = document.getElementById('end-accuracy');
+    const restartBtn = document.getElementById('restart-btn');
+
+    // ==========================================
+    // 4. WHEEL RENDERING & RIM PEGS
+    // ==========================================
+    const NUM_SLICES = CATEGORIES.length;
+    const SLICE_ANGLE = (2 * Math.PI) / NUM_SLICES;
+
+    function buildRimPegs() {
+      document.querySelectorAll('.rim-peg').forEach(el => el.remove());
+      const numPegs = 20;
+      for (let i = 0; i < numPegs; i++) {
+        const deg = (360 / numPegs) * i;
+        const peg = document.createElement('div');
+        peg.className = 'rim-peg';
+        peg.style.transform = `translate(-50%, -50%) rotate(${deg}deg) translateY(-162px)`;
+        wheelRim.appendChild(peg);
+      }
+    }
+
+    function drawWheel(rotationRad = 0) {
+      const w = wheelCanvas.width;
+      const h = wheelCanvas.height;
+      const cx = w / 2;
+      const cy = h / 2;
+      const radius = w / 2 - 6;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(rotationRad);
+
+      for (let i = 0; i < NUM_SLICES; i++) {
+        const cat = CATEGORIES[i];
+        const startAngle = -Math.PI / 2 + i * SLICE_ANGLE;
+        const endAngle = startAngle + SLICE_ANGLE;
+
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, radius, startAngle, endAngle);
+        ctx.closePath();
+
+        const grad = ctx.createRadialGradient(0, 0, 40, 0, 0, radius);
+        grad.addColorStop(0, cat.color);
+        grad.addColorStop(1, cat.darkColor);
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        ctx.lineWidth = 6;
+        ctx.strokeStyle = '#ffffff';
+        ctx.stroke();
+
+        ctx.save();
+        const midAngle = startAngle + SLICE_ANGLE / 2;
+        ctx.rotate(midAngle);
+
+        ctx.font = '56px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(cat.icon, radius * 0.64, 0);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '700 24px "Fredoka", sans-serif';
+        ctx.shadowColor = 'rgba(0,0,0,0.45)';
+        ctx.shadowBlur = 6;
+        ctx.shadowOffsetY = 2;
+        ctx.fillText(cat.shortName.toUpperCase(), radius * 0.38, 0);
+        ctx.restore();
+      }
+
+      ctx.restore();
+    }
+
+    // ==========================================
+    // 5. UI UPDATES & CROWNS BAR
+    // ==========================================
+    function renderCrowns() {
+      crownsGrid.innerHTML = '';
+      CATEGORIES.forEach(cat => {
+        const unlocked = state.crowns.has(cat.id);
+        const badge = document.createElement('div');
+        badge.className = `crown-badge ${unlocked ? 'unlocked' : ''}`;
+        badge.style.backgroundColor = unlocked ? cat.color : '#e2e8f0';
+        badge.innerHTML = `
+          <span class="mini-crown">👑</span>
+          <span class="cat-icon">${cat.icon}</span>
+          <span class="cat-name">${cat.shortName}</span>
+        `;
+        crownsGrid.appendChild(badge);
+      });
+    }
+
+    function updateHUD() {
+      scoreCount.textContent = state.score;
+      streakCount.textContent = state.streak;
+
+      const hearts = heartsDisplay.querySelectorAll('.heart');
+      hearts.forEach((h, idx) => {
+        if (idx >= state.lives) {
+          h.classList.add('lost');
+        } else {
+          h.classList.remove('lost');
+        }
+      });
+
+      renderCrowns();
+    }
+
+    // ==========================================
+    // 6. SPINNING LOGIC
+    // ==========================================
+    function spinWheel() {
+      if (state.isSpinning || state.lives <= 0) return;
+
+      state.isSpinning = true;
+      spinBtn.disabled = true;
+      statusBanner.innerHTML = `Spinning the wheel... Good luck! 🍀`;
+
+      let targetIndex;
+      const uncollected = CATEGORIES.map((c, idx) => (!state.crowns.has(c.id) ? idx : -1)).filter(idx => idx !== -1);
+      if (uncollected.length > 0 && Math.random() < 0.72) {
+        targetIndex = uncollected[Math.floor(Math.random() * uncollected.length)];
+      } else {
+        targetIndex = Math.floor(Math.random() * NUM_SLICES);
+      }
+
+      const sliceDeg = 360 / NUM_SLICES;
+      const jitter = (Math.random() - 0.5) * (sliceDeg * 0.55);
+      const targetCenterDeg = targetIndex * sliceDeg + sliceDeg / 2 + jitter;
+      const desiredFinalMod = (360 - (targetCenterDeg % 360) + 360) % 360;
+
+      const currentMod = ((state.currentRotation % 360) + 360) % 360;
+      let deltaDeg = desiredFinalMod - currentMod;
+      if (deltaDeg < 0) deltaDeg += 360;
+
+      const extraSpins = (5 + Math.floor(Math.random() * 3)) * 360;
+      const totalRotationDeg = state.currentRotation + extraSpins + deltaDeg;
+
+      const startRotation = state.currentRotation;
+      const duration = 3800;
+      const startTime = performance.now();
+      let lastSliceTick = -1;
+
+      function animate(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const ease = 1 - Math.pow(1 - progress, 4);
+
+        const currentDeg = startRotation + (totalRotationDeg - startRotation) * ease;
+        state.currentRotation = currentDeg;
+        drawWheel((currentDeg * Math.PI) / 180);
+
+        const normalizedDeg = ((360 - (currentDeg % 360)) + 360) % 360;
+        const currentSlice = Math.floor(normalizedDeg / sliceDeg) % NUM_SLICES;
+        if (currentSlice !== lastSliceTick) {
+          lastSliceTick = currentSlice;
+          sfx.playTick();
+          wheelPointer.classList.remove('tick');
+          void wheelPointer.offsetWidth;
+          wheelPointer.classList.add('tick');
+        }
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          state.isSpinning = false;
+          const landedCategory = CATEGORIES[targetIndex];
+          statusBanner.innerHTML = `Category: <strong>${landedCategory.icon} ${landedCategory.name}</strong>!`;
+          setTimeout(() => openQuestion(landedCategory), 550);
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    // ==========================================
+    // 7. QUESTION PRESENTATION & EVALUATION
+    // ==========================================
+    function getNextQuestion(category) {
+      if (!state.usedQuestions[category.id]) {
+        state.usedQuestions[category.id] = new Set();
+      }
+      const usedSet = state.usedQuestions[category.id];
+      if (usedSet.size >= category.questions.length) {
+        usedSet.clear();
+      }
+
+      const availableIndices = category.questions
+        .map((_, idx) => idx)
+        .filter(idx => !usedSet.has(idx));
+
+      const chosenIdx = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+      usedSet.add(chosenIdx);
+      return category.questions[chosenIdx];
+    }
+
+    function openQuestion(category) {
+      state.activeCategory = category;
+      const qObj = getNextQuestion(category);
+      state.activeQuestion = qObj;
+
+      const isCrownMatch = !state.crowns.has(category.id);
+
+      qHeader.style.background = `linear-gradient(135deg, ${category.color}, ${category.darkColor})`;
+      qCatIcon.textContent = category.icon;
+      qCatName.textContent = category.name;
+      qCrownAlert.style.display = isCrownMatch ? 'inline-block' : 'none';
+      qText.textContent = qObj.q;
+
+      qFeedback.className = 'feedback-box';
+      qFeedback.innerHTML = '';
+      qContinueBtn.style.display = 'none';
+
+      const indexedOptions = qObj.options.map((text, idx) => ({
+        text,
+        isCorrect: idx === qObj.answer
+      }));
+
+      for (let i = indexedOptions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [indexedOptions[i], indexedOptions[j]] = [indexedOptions[j], indexedOptions[i]];
+      }
+
+      const letters = ['A', 'B', 'C', 'D'];
+      qOptions.innerHTML = '';
+      indexedOptions.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerHTML = `
+          <span class="opt-letter">${letters[idx]}</span>
+          <span>${opt.text}</span>
+        `;
+        btn.addEventListener('click', () => handleAnswer(btn, opt.isCorrect, indexedOptions));
+        qOptions.appendChild(btn);
+      });
+
+      qModal.classList.add('active');
+    }
+
+    function handleAnswer(selectedBtn, isCorrect, allShuffledOptions) {
+      const buttons = qOptions.querySelectorAll('.option-btn');
+      buttons.forEach(b => (b.disabled = true));
+
+      state.totalAnswered++;
+
+      if (isCorrect) {
+        sfx.playCorrect();
+        selectedBtn.classList.add('correct');
+        state.totalCorrect++;
+        state.streak++;
+        const earnedPoints = 100 + (state.streak - 1) * 25;
+        state.score += earnedPoints;
+
+        const gotNewCrown = !state.crowns.has(state.activeCategory.id);
+        if (gotNewCrown) {
+          state.crowns.add(state.activeCategory.id);
+        }
+
+        qFeedback.className = 'feedback-box success';
+        qFeedback.innerHTML = `
+          <strong>${gotNewCrown ? '👑 Crown Conquered!' : '✅ Correct Answer!'} (+${earnedPoints} pts)</strong>
+          ${state.activeQuestion.info}
+        `;
+      } else {
+        sfx.playWrong();
+        selectedBtn.classList.add('wrong');
+        state.streak = 0;
+        state.lives = Math.max(0, state.lives - 1);
+
+        buttons.forEach((btn, idx) => {
+          if (allShuffledOptions[idx].isCorrect) {
+            btn.classList.add('correct');
+          }
+        });
+
+        qFeedback.className = 'feedback-box error';
+        qFeedback.innerHTML = `
+          <strong>❌ Incorrect! You lost a life</strong>
+          ${state.activeQuestion.info}
+        `;
+      }
+
+      updateHUD();
+      qContinueBtn.style.display = 'block';
+    }
+
+    function closeQuestionAndCheckEnd() {
+      qModal.classList.remove('active');
+
+      if (state.crowns.size === CATEGORIES.length) {
+        triggerEndGame(true);
+      } else if (state.lives <= 0) {
+        triggerEndGame(false);
+      } else {
+        spinBtn.disabled = false;
+        const remaining = CATEGORIES.length - state.crowns.size;
+        statusBanner.innerHTML = `You need <strong>${remaining} ${remaining === 1 ? 'crown' : 'crowns'}</strong> left. Spin again!`;
+      }
+    }
+
+    // ==========================================
+    // 8. VICTORY / GAME OVER & CONFETTI
+    // ==========================================
+    function triggerEndGame(isVictory) {
+      const accuracy = state.totalAnswered > 0
+        ? Math.round((state.totalCorrect / state.totalAnswered) * 100)
+        : 0;
+
+      endScore.textContent = state.score;
+      endCrowns.textContent = `${state.crowns.size}/${CATEGORIES.length}`;
+      endAccuracy.textContent = `${accuracy}%`;
+
+      if (isVictory) {
+        sfx.playWin();
+        endEmoji.textContent = '🏆';
+        endTitle.textContent = 'You Are the King of San Luis!';
+        endSubtitle.textContent = 'You mastered Sierra de las Quijadas, La Carolina, Villa de Merlo, Potrero de los Funes, and San Luis’s climate!';
+        launchConfetti();
+      } else {
+        endEmoji.textContent = '💔';
+        endTitle.textContent = 'Out of Lives!';
+        endSubtitle.textContent = `You collected ${state.crowns.size} of 5 crowns. Try again to conquer all of San Luis!`;
+      }
+
+      endModal.classList.add('active');
+    }
+
+    function resetGame() {
+      state.lives = 3;
+      state.score = 0;
+      state.streak = 0;
+      state.totalAnswered = 0;
+      state.totalCorrect = 0;
+      state.crowns.clear();
+      state.usedQuestions = {};
+      state.isSpinning = false;
+
+      endModal.classList.remove('active');
+      spinBtn.disabled = false;
+      statusBanner.innerHTML = `Tap <strong>SPIN</strong> to spin the wheel!`;
+      updateHUD();
+    }
+
+    function launchConfetti() {
+      const canvas = document.getElementById('confetti-canvas');
+      const cCtx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const colors = ['#f97316', '#eab308', '#22c55e', '#3b82f6', '#a855f7', '#fbbf24'];
+      const pieces = Array.from({ length: 130 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height - canvas.height,
+        w: Math.random() * 10 + 6,
+        h: Math.random() * 6 + 4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        vy: Math.random() * 3 + 2.5,
+        vx: (Math.random() - 0.5) * 2.5,
+        rot: Math.random() * 360,
+        vRot: (Math.random() - 0.5) * 8
+      }));
+
+      let frames = 0;
+      function drawConfetti() {
+        cCtx.clearRect(0, 0, canvas.width, canvas.height);
+        pieces.forEach(p => {
+          p.y += p.vy;
+          p.x += p.vx;
+          p.rot += p.vRot;
+
+          cCtx.save();
+          cCtx.translate(p.x, p.y);
+          cCtx.rotate((p.rot * Math.PI) / 180);
+          cCtx.fillStyle = p.color;
+          cCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+          cCtx.restore();
+        });
+
+        frames++;
+        if (frames < 220) {
+          requestAnimationFrame(drawConfetti);
+        } else {
+          cCtx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+      requestAnimationFrame(drawConfetti);
+    }
+
+    // ==========================================
+    // 9. EVENT LISTENERS & INITIALIZATION
+    // ==========================================
+    spinBtn.addEventListener('click', spinWheel);
+    qContinueBtn.addEventListener('click', closeQuestionAndCheckEnd);
+    restartBtn.addEventListener('click', resetGame);
+
+    soundToggle.addEventListener('click', () => {
+      sfx.enabled = !sfx.enabled;
+      soundToggle.textContent = sfx.enabled ? '🔊' : '🔇';
+    });
+
+    window.addEventListener('resize', () => {
+      const c = document.getElementById('confetti-canvas');
+      c.width = window.innerWidth;
+      c.height = window.innerHeight;
+    });
+
+    buildRimPegs();
+    drawWheel(0);
+    updateHUD();
+  </script>
+</body>
+</html>
