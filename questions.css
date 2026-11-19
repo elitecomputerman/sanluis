@@ -1,7 +1,7 @@
 :root {
   --bg-top: #1e3a8a;
   --bg-bottom: #3b82f6;
-  --card-bg: #0d132e;
+  --card-bg: #ffffff;
   --text-dark: #1e293b;
   --text-muted: #64748b;
 
@@ -22,7 +22,7 @@
 
 body {
   font-family: 'Nunito', sans-serif;
-  background: radial-gradient(circle at top, #000000 0%, #16152c 100%);
+  background: radial-gradient(circle at top, #2563eb 0%, #1e1b4b 100%);
   color: var(--text-dark);
   min-height: 100vh;
   display: flex;
@@ -65,7 +65,7 @@ h1, h2, h3, .wheel-btn, .badge-title {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: rgb(55, 31, 189);
+  color: white;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
 }
 
@@ -134,7 +134,7 @@ h1, h2, h3, .wheel-btn, .badge-title {
 .sound-btn {
   background: rgba(255, 255, 255, 0.18);
   border: none;
-  color: rgb(46, 16, 100);
+  color: white;
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -153,7 +153,7 @@ h1, h2, h3, .wheel-btn, .badge-title {
 /* Crowns Bar */
 .crowns-bar {
   width: 100%;
-  background: rgba(0, 0, 0, 0.95);
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 22px;
   padding: 12px 16px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
@@ -182,8 +182,8 @@ h1, h2, h3, .wheel-btn, .badge-title {
   justify-content: center;
   padding: 8px 4px;
   border-radius: 14px;
-  background: #000102;
-  border: 2px solid #000000;
+  background: #f1f5f9;
+  border: 2px solid #e2e8f0;
   transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
   text-align: center;
@@ -216,7 +216,7 @@ h1, h2, h3, .wheel-btn, .badge-title {
 .crown-badge.unlocked {
   transform: translateY(-3px);
   border-color: transparent;
-  color: rgb(0, 0, 0);
+  color: white;
   box-shadow: 0 5px 12px rgba(0, 0, 0, 0.18);
 }
 
@@ -226,7 +226,7 @@ h1, h2, h3, .wheel-btn, .badge-title {
 }
 
 .crown-badge.unlocked .cat-name {
-  color: rgb(0, 0, 0);
+  color: white;
 }
 
 .crown-badge.unlocked .mini-crown {
@@ -244,8 +244,8 @@ h1, h2, h3, .wheel-btn, .badge-title {
 }
 
 .status-banner {
-  background: rgba(24, 49, 107, 0.65);
-  color: rgb(5, 84, 255);
+  background: rgba(15, 23, 42, 0.65);
+  color: white;
   padding: 8px 20px;
   border-radius: 999px;
   font-weight: 700;
@@ -391,6 +391,42 @@ h1, h2, h3, .wheel-btn, .badge-title {
   opacity: 0.9;
 }
 
+/* Mobile QR Trigger Section */
+.mobile-qr-section {
+  margin-top: 6px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.qr-trigger-btn {
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.32);
+  color: #ffffff;
+  padding: 11px 22px;
+  border-radius: 999px;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  transition: all 0.2s ease;
+}
+
+.qr-trigger-btn:hover {
+  background: rgba(255, 255, 255, 0.28);
+  transform: translateY(-2px);
+  border-color: #fde047;
+}
+
+.qr-trigger-btn .phone-icon {
+  font-size: 1.25rem;
+}
+
 /* Modals */
 .modal-backdrop {
   position: fixed;
@@ -415,12 +451,12 @@ h1, h2, h3, .wheel-btn, .badge-title {
 }
 
 .modal-card {
-  background: rgb(3, 1, 119);
+  background: white;
   width: 100%;
   max-width: 520px;
   border-radius: 26px;
   overflow: hidden;
-  box-shadow: 0 25px 50px rgba(51, 25, 25, 0.45);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.45);
   animation: popIn 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -431,7 +467,7 @@ h1, h2, h3, .wheel-btn, .badge-title {
 
 .modal-header {
   padding: 18px 22px;
-  color: rgb(37, 23, 23);
+  color: white;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -460,6 +496,122 @@ h1, h2, h3, .wheel-btn, .badge-title {
   padding: 22px;
 }
 
+/* QR Modal Specific Styles */
+.qr-modal-card {
+  max-width: 420px;
+}
+
+.qr-modal-header {
+  background: linear-gradient(135deg, #2563eb, #1e1b4b);
+}
+
+.close-modal-x {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background 0.15s;
+}
+
+.close-modal-x:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.qr-modal-body {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.qr-instructions {
+  font-size: 0.98rem;
+  color: var(--text-dark);
+  line-height: 1.4;
+}
+
+.qr-box-wrapper {
+  background: #ffffff;
+  padding: 14px;
+  border-radius: 20px;
+  border: 3px solid #e2e8f0;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  display: inline-block;
+}
+
+.qr-url-display {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  word-break: break-all;
+  background: #f1f5f9;
+  padding: 6px 12px;
+  border-radius: 10px;
+  width: 100%;
+  user-select: all;
+}
+
+.qr-custom-url-box {
+  width: 100%;
+  background: #f8fafc;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 14px;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.qr-custom-url-box label {
+  display: block;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  line-height: 1.35;
+}
+
+.qr-input-row {
+  display: flex;
+  gap: 6px;
+}
+
+.qr-input-row input {
+  flex: 1;
+  padding: 7px 10px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.85rem;
+  outline: none;
+  user-select: text;
+}
+
+.qr-input-row input:focus {
+  border-color: #2563eb;
+}
+
+.qr-input-row button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 7px 12px;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.qr-input-row button:hover {
+  background: #1d4ed8;
+}
+
+/* Question Modal Elements */
 .question-text {
   font-size: 1.2rem;
   font-weight: 800;
