@@ -7,7 +7,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
-  <!-- Enlace al archivo CSS separado -->
+  <!-- QR Code Generator Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- External CSS Stylesheet -->
   <link rel="stylesheet" href="questions.css" />
 </head>
 <body>
@@ -65,6 +67,14 @@
         </div>
       </div>
     </main>
+
+    <!-- Play on Phone QR Section -->
+    <section class="mobile-qr-section">
+      <button class="qr-trigger-btn" id="open-qr-btn">
+        <span class="phone-icon">📱</span>
+        <span>Want to play on your phone?</span>
+      </button>
+    </section>
   </div>
 
   <!-- Question Modal -->
@@ -84,6 +94,38 @@
         </div>
         <div class="feedback-box" id="q-feedback"></div>
         <button class="continue-btn" id="q-continue-btn">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Code Modal -->
+  <div class="modal-backdrop" id="qr-modal">
+    <div class="modal-card qr-modal-card">
+      <div class="modal-header qr-modal-header">
+        <div class="cat-badge">
+          <span>📱</span>
+          <span>Play on Your Phone</span>
+        </div>
+        <button class="close-modal-x" id="close-qr-btn" title="Close">✕</button>
+      </div>
+      <div class="modal-body qr-modal-body">
+        <p class="qr-instructions">
+          Scan this QR code with your phone's camera to open <strong>Trivia Crack</strong> directly:
+        </p>
+
+        <div class="qr-box-wrapper">
+          <div id="qrcode-container"></div>
+        </div>
+
+        <p class="qr-url-display" id="qr-url-text"></p>
+
+        <div class="qr-custom-url-box" id="local-file-warning">
+          <label for="custom-url-input">Running locally via Live Server or LAN? Paste your local IP URL here (e.g., <code>http://192.168.1.50:5500</code>):</label>
+          <div class="qr-input-row">
+            <input type="text" id="custom-url-input" placeholder="http://192.168.1.X:5500/index.html" />
+            <button type="button" id="update-qr-btn">Update QR</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -457,6 +499,15 @@
     const endAccuracy = document.getElementById('end-accuracy');
     const restartBtn = document.getElementById('restart-btn');
 
+    // QR Modal References
+    const openQrBtn = document.getElementById('open-qr-btn');
+    const qrModal = document.getElementById('qr-modal');
+    const closeQrBtn = document.getElementById('close-qr-btn');
+    const qrcodeContainer = document.getElementById('qrcode-container');
+    const qrUrlText = document.getElementById('qr-url-text');
+    const customUrlInput = document.getElementById('custom-url-input');
+    const updateQrBtn = document.getElementById('update-qr-btn');
+
     // ==========================================
     // 4. WHEEL RENDERING & RIM PEGS
     // ==========================================
@@ -756,7 +807,48 @@
     }
 
     // ==========================================
-    // 8. VICTORY / GAME OVER & CONFETTI
+    // 8. QR CODE MODAL LOGIC
+    // ==========================================
+    function generateQRCode(targetUrl) {
+      qrcodeContainer.innerHTML = '';
+      qrUrlText.textContent = targetUrl;
+
+      new QRCode(qrcodeContainer, {
+        text: targetUrl,
+        width: 210,
+        height: 210,
+        colorDark: '#1e1b4b',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    }
+
+    openQrBtn.addEventListener('click', () => {
+      const currentUrl = window.location.href;
+      generateQRCode(currentUrl);
+      qrModal.classList.add('active');
+    });
+
+    closeQrBtn.addEventListener('click', () => {
+      qrModal.classList.remove('active');
+    });
+
+    qrModal.addEventListener('click', (e) => {
+      if (e.target === qrModal) {
+        qrModal.classList.remove('active');
+      }
+    });
+
+    updateQrBtn.addEventListener('click', () => {
+      const customVal = customUrlInput.value.trim();
+      if (customVal) {
+        const formattedUrl = customVal.startsWith('http') ? customVal : `http://${customVal}`;
+        generateQRCode(formattedUrl);
+      }
+    });
+
+    // ==========================================
+    // 9. VICTORY / GAME OVER & CONFETTI
     // ==========================================
     function triggerEndGame(isVictory) {
       const accuracy = state.totalAnswered > 0
@@ -844,7 +936,7 @@
     }
 
     // ==========================================
-    // 9. EVENT LISTENERS & INITIALIZATION
+    // 10. EVENT LISTENERS & INITIALIZATION
     // ==========================================
     spinBtn.addEventListener('click', spinWheel);
     qContinueBtn.addEventListener('click', closeQuestionAndCheckEnd);
